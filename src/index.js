@@ -8,6 +8,7 @@ import cors from 'cors'
 import colors from 'colors'
 import morgan from 'morgan'
 import { notFound, errorHandler } from './middleware/errorMiddleware.js'
+import userRoutes from './routes/userRoutes.js'
 
 const app = express()
 app.use(cors())
@@ -15,6 +16,8 @@ app.use(cors())
 if (process.env.NODE_ENV === 'development') {
    app.use(morgan('dev'))
 }
+
+app.use('/api/users', userRoutes)
 
 app.use(notFound)
 app.use(errorHandler)
@@ -68,8 +71,8 @@ if (app.get('env') === 'development') {
 
    server.listen(port, () => {
       console.log(
-         `Server running in ${process.env.NODE_ENV} mode on port ${port}`.yellow
-            .bold
+         `Server running in ${process.env.NODE_ENV} mode on port ${port}`.blue
+         // .bold
       )
    })
 }

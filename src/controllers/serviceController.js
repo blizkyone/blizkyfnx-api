@@ -14,8 +14,17 @@ const getServices = asyncHandler(async (req, res) => {
          { 'address.country': country },
       ],
    })
-   //    console.log(services)
-   res.json({ services })
+
+   const categories = await Service.find({
+      $and: [
+         { 'address.city': city },
+         { 'address.state': state },
+         { 'address.country': country },
+      ],
+   }).distinct('categories')
+
+   // console.log(services)
+   res.json({ services, categories })
 })
 
 export { getServices }

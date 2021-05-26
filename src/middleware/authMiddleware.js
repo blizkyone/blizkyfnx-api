@@ -43,7 +43,7 @@ const protect = asyncHandler(async (req, res, next) => {
 
 const optional = asyncHandler(async (req, res, next) => {
    let token
-   console.log(req.headers.authorization)
+   // console.log(req.headers.authorization)
 
    if (
       req.headers.authorization &&

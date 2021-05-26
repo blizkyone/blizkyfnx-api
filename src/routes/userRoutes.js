@@ -1,19 +1,16 @@
 import express from 'express'
 const router = express.Router()
 import {
-   authUser,
-   //    userLogout,
-   //    registerUser,
-   //    getUserProfile,
-   //    updateUserProfile,
-   //    getUsers,
-   //    deleteUser,
-   //    getUserById,
-   //    updateUser,
-   //    validateUsername,
+   userLogin,
+   userLogout,
+   validateUsername,
+   registerUser,
 } from '../controllers/userController.js'
 import { protect, admin } from '../middleware/authMiddleware.js'
 
-router.post('/login', authUser)
+router.route('/').post(registerUser)
+router.route('/login').post(userLogin)
+router.route('/logout').get(userLogout)
+router.route('/validateUsername').get(validateUsername)
 
 export default router

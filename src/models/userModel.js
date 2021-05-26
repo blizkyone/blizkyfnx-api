@@ -35,7 +35,13 @@ const userSchema = mongoose.Schema(
          required: true,
       },
       bio: String,
-      friends: [
+      following: [
+         {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+         },
+      ],
+      followers: [
          {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',

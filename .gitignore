@@ -1,3 +1,5 @@
 /node_modules
 .env
 .cert
+src/seederData
+scripts.js

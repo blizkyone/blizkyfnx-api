@@ -8,7 +8,12 @@ import cors from 'cors'
 import colors from 'colors'
 import morgan from 'morgan'
 import { notFound, errorHandler } from './middleware/errorMiddleware.js'
+import connectDB from './config/db.js'
 import userRoutes from './routes/userRoutes.js'
+import serviceRoutes from './routes/serviceRoutes.js'
+
+connectDB()
+// crontasks()
 
 const app = express()
 app.use(cors())
@@ -18,6 +23,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 app.use('/api/users', userRoutes)
+app.use('/api/services', serviceRoutes)
 
 app.use(notFound)
 app.use(errorHandler)

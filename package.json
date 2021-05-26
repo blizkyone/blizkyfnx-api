@@ -7,7 +7,10 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon -r dotenv/config src/index.js"
+    "dev": "nodemon -r dotenv/config src/index.js",
+    "data:u": "node src/scripts.js -u",
+    "data:s": "node src/scripts.js -s",
+    "data:d": "node src/scripts.js -d"
   },
   "dependencies": {
     "aws-sdk": "^2.912.0",

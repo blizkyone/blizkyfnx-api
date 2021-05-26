@@ -1,11 +1,14 @@
 import mongoose from 'mongoose'
-import moment from 'moment'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
 const userSchema = mongoose.Schema(
    {
       name: {
+         type: String,
+         required: true,
+      },
+      familyName: {
          type: String,
          required: true,
       },
@@ -16,13 +19,77 @@ const userSchema = mongoose.Schema(
       },
       email: {
          type: String,
-         required: true,
          unique: true,
+         sparse: true,
+      },
+      phone: {
+         type: String,
+         unique: true,
+         sparse: true,
+      },
+      countryCode: {
+         type: String,
       },
       password: {
          type: String,
          required: true,
       },
+      bio: String,
+      friends: [
+         {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+         },
+      ],
+      requestFrom: [
+         {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+         },
+      ],
+      requestTo: [
+         {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+         },
+      ],
+      services: [
+         {
+            service: {
+               type: mongoose.Schema.Types.ObjectId,
+               ref: 'Service',
+            },
+            position: {
+               type: String,
+               required: true,
+            },
+         },
+      ],
+      teamRequest: [
+         {
+            sid: {
+               type: mongoose.Schema.Types.ObjectId,
+               ref: 'Service',
+            },
+            position: {
+               type: String,
+               required: true,
+            },
+         },
+      ],
+      recoServices: [
+         {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Service',
+         },
+      ],
+      antirecoServices: [
+         {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Service',
+         },
+      ],
+      facebookId: String,
       tokens: [
          {
             token: {

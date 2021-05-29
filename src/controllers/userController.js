@@ -7,7 +7,10 @@ import User from '../models/userModel.js'
 const userLogin = asyncHandler(async (req, res) => {
    const { email, password } = req.body
 
-   const user = await User.findOne({ email })
+   const user = await User.findOne({ email }).populate({
+      path: 'services',
+      populate: { path: 'service', model: 'Service' },
+   })
 
    if (user && (await user.matchPassword(password))) {
       const token = await user.generateAuthToken()
@@ -17,6 +20,7 @@ const userLogin = asyncHandler(async (req, res) => {
          familyName: user.familyName,
          username: user.username,
          email: user.email,
+         services: user.services,
          // stripeId: user.stripeId,
          // paymentMethod: user.paymentMethod,
          // isAdmin: user.isAdmin,
@@ -66,7 +70,7 @@ const validateUsername = asyncHandler(async (req, res) => {
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-   console.log(req.body)
+   // console.log(req.body)
    const { name, username, email, password, familyName } = req.body
 
    const userExists = await User.findOne({ email })
@@ -106,4 +110,77 @@ const registerUser = asyncHandler(async (req, res) => {
    }
 })
 
-export { userLogin, userLogout, validateUsername, registerUser }
+// @desc    Get user profile info
+// @route   GET /api/users
+// @access  Private
+const getMyProfile = asyncHandler(async (req, res) => {
+   let recoCategories = []
+   let antirecoCategories = []
+
+   let profile = await User.findById(req.user._id)
+      .populate({
+         path: 'services',
+         populate: { path: 'service', model: 'Service' },
+      })
+      .populate({
+         path: 'services',
+         populate: {
+            path: 'service',
+            populate: {
+               path: 'team',
+               populate: {
+                  path: 'user',
+                  model: 'User',
+                  select: 'name familyName',
+               },
+            },
+         },
+      })
+      .populate('recoServices')
+      .populate({
+         path: 'recoServices',
+         populate: {
+            path: 'team',
+            populate: {
+               path: 'user',
+               model: 'User',
+               select: 'name familyName',
+            },
+         },
+      })
+      // .populate('antirecoServices')
+      // .populate({
+      //    path: 'antirecoServices',
+      //    populate: {
+      //       path: 'team',
+      //       populate: {
+      //          path: 'user',
+      //          model: 'User',
+      //          select: 'name familyName',
+      //       },
+      //    },
+      // })
+      .populate('friends')
+
+   if (profile.recoServices.length > 0) {
+      let tempArray = []
+      // console.log(profile.recoServices)
+      profile.recoServices.forEach((service) => {
+         service.categories.forEach((category) => tempArray.push(category))
+      })
+      recoCategories = [...new Set(tempArray)]
+   }
+
+   // if (profile.antirecoServices.length > 0) {
+   //    let tempArray = []
+   //    profile.antirecoServices.forEach((service) => {
+   //       service.categories.forEach((category) => tempArray.push(category))
+   //    })
+   //    antirecoCategories = [...new Set(tempArray)]
+   // }
+   console.log(profile.services)
+
+   res.send({ profile, recoCategories })
+})
+
+export { userLogin, userLogout, validateUsername, registerUser, getMyProfile }

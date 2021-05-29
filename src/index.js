@@ -11,6 +11,7 @@ import { notFound, errorHandler } from './middleware/errorMiddleware.js'
 import connectDB from './config/db.js'
 import userRoutes from './routes/userRoutes.js'
 import serviceRoutes from './routes/serviceRoutes.js'
+import placesRoutes from './routes/placesRoutes.js'
 
 connectDB()
 // crontasks()
@@ -25,6 +26,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use('/api/users', userRoutes)
 app.use('/api/services', serviceRoutes)
+app.use('/api/places', placesRoutes)
 
 app.use(notFound)
 app.use(errorHandler)

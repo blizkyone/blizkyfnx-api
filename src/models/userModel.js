@@ -35,18 +35,18 @@ const userSchema = mongoose.Schema(
          required: true,
       },
       bio: String,
-      following: [
+      friends: [
          {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
          },
       ],
-      followers: [
-         {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-         },
-      ],
+      // followers: [
+      //    {
+      //       type: mongoose.Schema.Types.ObjectId,
+      //       ref: 'User',
+      //    },
+      // ],
       requestFrom: [
          {
             type: mongoose.Schema.Types.ObjectId,
@@ -109,6 +109,81 @@ const userSchema = mongoose.Schema(
       timestamps: true,
    }
 )
+
+userSchema.methods.getServiceList = async function (services) {
+   const user = this
+   let serviceList = []
+
+   services.forEach((service) => {
+      let ser = new Object()
+
+      const {
+         servicename,
+         name,
+         categories,
+         lat,
+         lng,
+         recos,
+         antirecos,
+         team,
+         phoneArray,
+         description,
+         webpage,
+         instagram,
+         _id,
+      } = service
+      ser = {
+         servicename,
+         name,
+         categories,
+         lat,
+         lng,
+         recos,
+         antirecos,
+         team,
+         description,
+         phoneArray,
+         webpage,
+         instagram,
+         _id,
+      }
+
+      ser.recommended = false
+      // if(service.recos.includes(this.id)) { ser.recommended = true }
+      service.recos.forEach((service) => {
+         if (service._id == user.id) {
+            ser.recommended = true
+         }
+      })
+
+      ser.antirecommended = false
+      // if(service.antirecos.includes(this.id)) { ser.antirecommended = true }
+      service.antirecos.forEach((service) => {
+         if (service._id == user.id) {
+            ser.antirecommended = true
+         }
+      })
+
+      const recosF = service.recos.filter(
+         (x) => user.friends && user.friends.includes(x._id)
+      )
+      ser.recosFollowing = recosF
+
+      const antirecosF = service.antirecos.filter(
+         (x) => user.friends && user.friends.includes(x._id)
+      )
+      ser.antirecosFollowing = antirecosF
+
+      const followings = service.team.filter(
+         (x) => user.friends && user.friends.includes(x.user._id)
+      )
+      ser.teamFollowing = followings
+
+      serviceList.push(ser)
+   })
+
+   return serviceList
+}
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
    return await bcrypt.compare(enteredPassword, this.password)

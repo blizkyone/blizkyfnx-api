@@ -110,6 +110,88 @@ const userSchema = mongoose.Schema(
    }
 )
 
+userSchema.methods.getService = async function (service) {
+   const user = this
+
+   let ser = new Object()
+
+   const {
+      servicename,
+      name,
+      categories,
+      lat,
+      lng,
+      recos,
+      antirecos,
+      team,
+      phoneArray,
+      description,
+      webpage,
+      instagram,
+      _id,
+   } = service
+   ser = {
+      servicename,
+      name,
+      categories,
+      lat,
+      lng,
+      recos,
+      antirecos,
+      team,
+      description,
+      phoneArray,
+      webpage,
+      instagram,
+      _id,
+   }
+
+   ser.recommended = false
+   // if(service.recos.includes(this.id)) { ser.recommended = true }
+   ser.recos.forEach((item) => {
+      if (item._id.equals(user._id)) {
+         ser.recommended = true
+      }
+   })
+
+   ser.antirecommended = false
+   // if(service.antirecos.includes(this.id)) { ser.antirecommended = true }
+   service.antirecos.forEach((item) => {
+      if (item._id.equals(user._id)) {
+         ser.antirecommended = true
+      }
+   })
+
+   const recosF = service.recos.filter((x) => user.friends.includes(x._id))
+   ser.recosFollowing = recosF
+
+   const antirecosF = service.antirecos.filter((x) =>
+      user.friends.includes(x._id)
+   )
+   ser.antirecosFollowing = antirecosF
+
+   const followings = service.team.filter((x) =>
+      user.friends.includes(x.user._id)
+   )
+   ser.teamFollowing = followings
+
+   const teamStatus = service.team.map((x) => {
+      // console.log(x)
+      if (user.friends.indexOf(x.user._id) !== -1) {
+         return { ...x, status: 'friend' }
+      } else if (user.requestFrom.indexOf(x.user._id) !== -1) {
+         return { ...x, status: 'request-recieved' }
+      } else if (user.requestTo.indexOf(x.user._id) !== -1) {
+         return { ...x, status: 'request-sent' }
+      } else {
+         return { ...x, status: 'none' }
+      }
+   })
+   // console.log(teamStatus)
+   ser.team = teamStatus
+   return ser
+}
+
 userSchema.methods.getServiceList = async function (services) {
    const user = this
    let serviceList = []
@@ -150,16 +232,16 @@ userSchema.methods.getServiceList = async function (services) {
 
       ser.recommended = false
       // if(service.recos.includes(this.id)) { ser.recommended = true }
-      service.recos.forEach((service) => {
-         if (service._id == user.id) {
+      service.recos.forEach((item) => {
+         if (item._id.equals(user._id)) {
             ser.recommended = true
          }
       })
 
       ser.antirecommended = false
       // if(service.antirecos.includes(this.id)) { ser.antirecommended = true }
-      service.antirecos.forEach((service) => {
-         if (service._id == user.id) {
+      service.antirecos.forEach((item) => {
+         if (item._id.equals(user._id)) {
             ser.antirecommended = true
          }
       })

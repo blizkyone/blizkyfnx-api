@@ -29,6 +29,8 @@ const getAddress = asyncHandler(async (req, res) => {
       `https://maps.googleapis.com/maps/api/geocode/json?latlng=${req.query.latlng}&result_type=street_address&key=${process.env.GOOGLE_API_KEY}`
    )
 
+   // console.log(googleResponse.data.results)
+
    if (googleResponse) {
       res.json(googleResponse.data.results[0].formatted_address)
    } else {

@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler'
 import User from '../models/userModel.js'
+import mongoose from 'mongoose'
 
 // @desc    Auth user & get token
 // @route   POST /api/users/login
@@ -122,20 +123,20 @@ const getMyProfile = asyncHandler(async (req, res) => {
          path: 'services',
          populate: { path: 'service', model: 'Service' },
       })
-      .populate({
-         path: 'services',
-         populate: {
-            path: 'service',
-            populate: {
-               path: 'team',
-               populate: {
-                  path: 'user',
-                  model: 'User',
-                  select: 'name familyName',
-               },
-            },
-         },
-      })
+      // .populate({
+      //    path: 'services',
+      //    populate: {
+      //       path: 'service',
+      //       populate: {
+      //          path: 'team',
+      //          populate: {
+      //             path: 'user',
+      //             model: 'User',
+      //             select: 'name familyName',
+      //          },
+      //       },
+      //    },
+      // })
       .populate('recoServices')
       .populate({
          path: 'recoServices',
@@ -178,9 +179,79 @@ const getMyProfile = asyncHandler(async (req, res) => {
    //    })
    //    antirecoCategories = [...new Set(tempArray)]
    // }
-   console.log(profile.services)
+   // console.log(profile.services)
 
    res.send({ profile, recoCategories })
 })
 
-export { userLogin, userLogout, validateUsername, registerUser, getMyProfile }
+// @desc    Solicitar o aceptar conexión con un usuario
+// @route   GET /api/users/:id/connect
+// @access  Private
+const connectToUser = asyncHandler(async (req, res) => {
+   const id = mongoose.Types.ObjectId(req.params.id)
+
+   if (req.body.reject) {
+      // console.log('rejected a request')
+      const me = await req.user.updateOne({
+         $pull: { requestFrom: id },
+      })
+      const user = await User.findByIdAndUpdate(id, {
+         $pull: { requestTo: req.user._id },
+      })
+      res.send(me)
+      return
+   }
+
+   const isRequested = req.user.requestTo.indexOf(id)
+   const receivedRequest = req.user.requestFrom.indexOf(id)
+   const isFriend = req.user.friends.indexOf(id)
+
+   if (isFriend !== -1) {
+      // console.log('un friended')
+      const me = await req.user.updateOne({
+         $pull: { friends: id },
+      })
+      const user = await User.findByIdAndUpdate(id, {
+         $pull: { friends: req.user._id },
+      })
+      res.send(me)
+   } else if (isRequested !== -1) {
+      // console.log('canceled a request')
+      const me = await req.user.updateOne({
+         $pull: { requestTo: id },
+      })
+      const user = await User.findByIdAndUpdate(id, {
+         $pull: { requestFrom: req.user._id },
+      })
+      res.send(me)
+   } else if (receivedRequest !== -1) {
+      // console.log('handled a request')
+      const me = await req.user.updateOne({
+         $pull: { requestFrom: id },
+         $addToSet: { friends: id },
+      })
+      const user = await User.findByIdAndUpdate(id, {
+         $pull: { requestTo: req.user._id },
+         $addToSet: { friends: req.user._id },
+      })
+      res.send(me)
+   } else {
+      // console.log('sent a request')
+      const me = await req.user.updateOne({
+         $addToSet: { requestTo: id },
+      })
+      const user = await User.findByIdAndUpdate(id, {
+         $addToSet: { requestFrom: req.user._id },
+      })
+      res.send(me)
+   }
+})
+
+export {
+   userLogin,
+   userLogout,
+   validateUsername,
+   registerUser,
+   getMyProfile,
+   connectToUser,
+}

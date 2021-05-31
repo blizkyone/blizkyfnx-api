@@ -7,6 +7,7 @@ const pointSchema = mongoose.Schema({
       required: true,
    },
    coordinates: {
+      //[longitude, latitude]
       type: [Number],
       required: true,
    },
@@ -29,7 +30,8 @@ const serviceSchema = mongoose.Schema(
       servicename: {
          type: String,
          unique: true,
-         required: true,
+         sparse: true,
+         // required: true,
       },
       name: {
          type: String,
@@ -82,6 +84,8 @@ const serviceSchema = mongoose.Schema(
       instagram: {
          type: String,
       },
+      facebook: String,
+      twitter: String,
       photoGallery: [String],
    },
    {

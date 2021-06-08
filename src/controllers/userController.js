@@ -112,6 +112,59 @@ const registerUser = asyncHandler(async (req, res) => {
 })
 
 // @desc    Get user profile info
+// @route   GET /api/users/:id
+// @access  Optional
+const getUserProfile = asyncHandler(async (req, res) => {
+   const id = mongoose.Types.ObjectId(req.params.id)
+   let recoCategories = []
+   let antirecoCategories = []
+
+   let profile = await User.findById(id)
+      .populate({
+         path: 'services',
+         populate: { path: 'service', model: 'Service' },
+      })
+      .populate('recoServices')
+      .populate({
+         path: 'recoServices',
+         populate: {
+            path: 'team',
+            populate: {
+               path: 'user',
+               model: 'User',
+               select: 'name familyName',
+            },
+         },
+      })
+      .populate('friends')
+      .lean()
+
+   if (profile.recoServices.length > 0) {
+      let tempArray = []
+      // console.log(profile.recoServices)
+      profile.recoServices.forEach((service) => {
+         service.categories.forEach((category) => tempArray.push(category))
+      })
+      recoCategories = [...new Set(tempArray)]
+   }
+
+   if (req.user) {
+      profile = await req.user.getUserProfile(profile)
+   }
+
+   // if (profile.antirecoServices.length > 0) {
+   //    let tempArray = []
+   //    profile.antirecoServices.forEach((service) => {
+   //       service.categories.forEach((category) => tempArray.push(category))
+   //    })
+   //    antirecoCategories = [...new Set(tempArray)]
+   // }
+   // console.log(profile.services)
+
+   res.send({ profile, recoCategories })
+})
+
+// @desc    Get my profile
 // @route   GET /api/users
 // @access  Private
 const getMyProfile = asyncHandler(async (req, res) => {
@@ -230,10 +283,17 @@ const connectToUser = asyncHandler(async (req, res) => {
          $pull: { requestFrom: id },
          $addToSet: { friends: id },
       })
+
       const user = await User.findByIdAndUpdate(id, {
          $pull: { requestTo: req.user._id },
          $addToSet: { friends: req.user._id },
       })
+      await user.notify({
+         type: 'new-friend',
+         message: 'Es tu amigo en Blizky',
+         about_user: req.user._id,
+      })
+
       res.send(me)
    } else {
       // console.log('sent a request')
@@ -242,6 +302,11 @@ const connectToUser = asyncHandler(async (req, res) => {
       })
       const user = await User.findByIdAndUpdate(id, {
          $addToSet: { requestFrom: req.user._id },
+      })
+      await user.notify({
+         type: 'friend-request',
+         message: 'Ha solicitado tu amistad',
+         about_user: req.user._id,
       })
       res.send(me)
    }
@@ -254,4 +319,5 @@ export {
    registerUser,
    getMyProfile,
    connectToUser,
+   getUserProfile,
 }

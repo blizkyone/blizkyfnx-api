@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import Notification from '../models/notificationModel.js'
 
 const userSchema = mongoose.Schema(
    {
@@ -109,6 +110,30 @@ const userSchema = mongoose.Schema(
       timestamps: true,
    }
 )
+
+userSchema.methods.notify = async function ({
+   type,
+   message,
+   about_user,
+   about_service,
+}) {
+   const user = this
+   await Notification.create({ user, type, message, about_user, about_service })
+   return
+}
+
+userSchema.methods.getUserProfile = async function (user) {
+   if (this.friends.indexOf(user._id) != -1) {
+      return { ...user, status: 'friend' }
+   }
+   if (this.requestTo.indexOf(user._id) != -1) {
+      return { ...user, status: 'request-sent' }
+   }
+   if (this.requestFrom.indexOf(user._id) != -1) {
+      return { ...user, status: 'request-received' }
+   }
+   return { ...user, status: 'none' }
+}
 
 userSchema.methods.getService = async function (service) {
    const user = this

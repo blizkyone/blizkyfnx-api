@@ -312,6 +312,24 @@ const connectToUser = asyncHandler(async (req, res) => {
    }
 })
 
+// @desc    Editar mi perfil de usuario
+// @route   PUT /api/users/
+// @access  Private
+const editProfile = asyncHandler(async (req, res) => {
+   // const { name, familyName, bio, username } = req.body
+   const updates = Object.keys(req.body)
+
+   const usernameExists = await User.exists({ username: req.body.username })
+   if (usernameExists && req.user.username !== req.body.username) {
+      throw new Error('El nombre de usuario ya está ocupado')
+   }
+
+   // const newUser = await req.user.update({ name, familyName, bio, username })
+   updates.forEach((update) => (req.user[update] = req.body[update]))
+   let newUser = await req.user.save()
+   res.send(newUser)
+})
+
 export {
    userLogin,
    userLogout,
@@ -320,4 +338,5 @@ export {
    getMyProfile,
    connectToUser,
    getUserProfile,
+   editProfile,
 }

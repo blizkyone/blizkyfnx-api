@@ -8,10 +8,12 @@ import {
    getMyProfile,
    connectToUser,
    getUserProfile,
+   editProfile,
 } from '../controllers/userController.js'
 import { protect, optional } from '../middleware/authMiddleware.js'
 
 router.route('/').post(registerUser).get(protect, getMyProfile)
+router.route('/profile').put(protect, editProfile)
 router.route('/login').post(userLogin)
 router.route('/logout').get(protect, userLogout)
 router.route('/validateUsername').get(validateUsername)

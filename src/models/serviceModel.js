@@ -93,6 +93,19 @@ const serviceSchema = mongoose.Schema(
    }
 )
 
+serviceSchema.pre('save', async function (next) {
+   if (this.isModified('lat') || this.isModified('lng')) {
+      const location = {
+         type: 'Point',
+         coordinates: [parseFloat(this.lng), parseFloat(this.lat)],
+      }
+
+      this.location = location
+   }
+
+   next()
+})
+
 const Service = mongoose.model('Service', serviceSchema)
 
 export default Service

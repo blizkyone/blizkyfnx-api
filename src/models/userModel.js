@@ -154,6 +154,7 @@ userSchema.methods.getService = async function (service) {
       webpage,
       instagram,
       _id,
+      owner,
    } = service
    ser = {
       servicename,
@@ -169,6 +170,7 @@ userSchema.methods.getService = async function (service) {
       webpage,
       instagram,
       _id,
+      owner,
    }
 
    ser.recommended = false
@@ -205,7 +207,7 @@ userSchema.methods.getService = async function (service) {
       if (user.friends.indexOf(x.user._id) !== -1) {
          return { ...x, status: 'friend' }
       } else if (user.requestFrom.indexOf(x.user._id) !== -1) {
-         return { ...x, status: 'request-recieved' }
+         return { ...x, status: 'request-received' }
       } else if (user.requestTo.indexOf(x.user._id) !== -1) {
          return { ...x, status: 'request-sent' }
       } else {

@@ -181,6 +181,24 @@ const recommendService = asyncHandler(async (req, res) => {
    }
 })
 
+// @desc    Editar mi servicio
+// @route   PUT /api/service/
+// @access  Private
+const editServiceProfile = asyncHandler(async (req, res) => {
+   // const { name, familyName, bio, username } = req.body
+   const service = await Service.findById(req.params.id)
+   if (!req.user._id.equals(service.owner)) {
+      throw new Error('Solo el dueño del servicio puede editar la información')
+   }
+
+   const updates = Object.keys(req.body)
+
+   // const newUser = await req.user.update({ name, familyName, bio, username })
+   updates.forEach((update) => (service[update] = req.body[update]))
+   let newService = await service.save()
+   res.send(newService)
+})
+
 export {
    getServices,
    getCategories,
@@ -188,4 +206,5 @@ export {
    createNewService,
    recommendService,
    getServiceProfile,
+   editServiceProfile,
 }

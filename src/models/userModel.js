@@ -74,7 +74,7 @@ const userSchema = mongoose.Schema(
       ],
       teamRequest: [
          {
-            sid: {
+            service: {
                type: mongoose.Schema.Types.ObjectId,
                ref: 'Service',
             },

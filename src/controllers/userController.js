@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler'
 import User from '../models/userModel.js'
+import Service from '../models/serviceModel.js'
 import mongoose from 'mongoose'
 
 // @desc    Auth user & get token
@@ -202,6 +203,14 @@ const getMyProfile = asyncHandler(async (req, res) => {
             },
          },
       })
+      .populate({
+         path: 'teamRequest',
+         populate: {
+            path: 'service',
+            model: 'Service',
+            select: 'name',
+         },
+      })
       // .populate('antirecoServices')
       // .populate({
       //    path: 'antirecoServices',
@@ -330,6 +339,70 @@ const editProfile = asyncHandler(async (req, res) => {
    res.send(newUser)
 })
 
+// @desc    Invitar usuario a un equipo
+// @route   POST /api/users/:username/invite-to-team
+// @access  Private
+const inviteToTeam = asyncHandler(async (req, res) => {
+   const { username } = req.params
+   const { service, position } = req.body
+   // console.log(req.params)
+
+   const user = await User.findOneAndUpdate(
+      { username },
+      {
+         $addToSet: {
+            teamRequest: {
+               service: mongoose.Types.ObjectId(service),
+               position,
+            },
+         },
+      }
+   )
+
+   if (!user) {
+      throw new Error(`No se encontró al usuario: ${username}`)
+   }
+
+   res.send(true)
+})
+
+// @desc    Aceptar o rechazar invitación a un equipo
+// @route   POST /api/users/:service/handle-invite-to-team
+// @access  Private
+const handleInviteToTeam = asyncHandler(async (req, res) => {
+   const { service } = req.params
+   const { accept, position } = req.body
+   // console.log(req.params)
+
+   if (accept) {
+      await req.user.update({
+         $pull: {
+            teamRequest: {
+               service: mongoose.Types.ObjectId(service),
+               position,
+            },
+         },
+         $addToSet: {
+            services: { service: mongoose.Types.ObjectId(service), position },
+         },
+      })
+      await Service.findByIdAndUpdate(service, {
+         $addToSet: { team: { user: req.user._id, position } },
+      })
+   } else {
+      await req.user.update({
+         $pull: {
+            teamRequest: {
+               service: mongoose.Types.ObjectId(service),
+               position,
+            },
+         },
+      })
+   }
+
+   res.send(true)
+})
+
 export {
    userLogin,
    userLogout,
@@ -339,4 +412,6 @@ export {
    connectToUser,
    getUserProfile,
    editProfile,
+   inviteToTeam,
+   handleInviteToTeam,
 }

@@ -9,6 +9,8 @@ import {
    connectToUser,
    getUserProfile,
    editProfile,
+   inviteToTeam,
+   handleInviteToTeam,
 } from '../controllers/userController.js'
 import { protect, optional } from '../middleware/authMiddleware.js'
 
@@ -18,6 +20,10 @@ router.route('/login').post(userLogin)
 router.route('/logout').get(protect, userLogout)
 router.route('/validateUsername').get(validateUsername)
 router.route('/:id/connect').post(protect, connectToUser)
+router.route('/:username/invite-to-team').post(protect, inviteToTeam)
+router
+   .route('/:service/handle-invite-to-team')
+   .post(protect, handleInviteToTeam)
 router.route('/:id').get(optional, getUserProfile)
 
 export default router

@@ -181,6 +181,19 @@ userSchema.methods.getService = async function (service) {
       }
    })
 
+   ser.recos = ser.recos.map((x) => {
+      // console.log(x)
+      if (user.friends.indexOf(x._id) !== -1) {
+         return { ...x, status: 'friend' }
+      } else if (user.requestFrom.indexOf(x._id) !== -1) {
+         return { ...x, status: 'request-received' }
+      } else if (user.requestTo.indexOf(x._id) !== -1) {
+         return { ...x, status: 'request-sent' }
+      } else {
+         return { ...x, status: 'none' }
+      }
+   })
+
    ser.antirecommended = false
    // if(service.antirecos.includes(this.id)) { ser.antirecommended = true }
    service.antirecos.forEach((item) => {
@@ -190,7 +203,19 @@ userSchema.methods.getService = async function (service) {
    })
 
    const recosF = service.recos.filter((x) => user.friends.includes(x._id))
-   ser.recosFollowing = recosF
+
+   ser.recosFollowing = recosF.map((x) => {
+      // console.log(x)
+      if (user.friends.indexOf(x._id) !== -1) {
+         return { ...x, status: 'friend' }
+      } else if (user.requestFrom.indexOf(x._id) !== -1) {
+         return { ...x, status: 'request-received' }
+      } else if (user.requestTo.indexOf(x._id) !== -1) {
+         return { ...x, status: 'request-sent' }
+      } else {
+         return { ...x, status: 'none' }
+      }
+   })
 
    const antirecosF = service.antirecos.filter((x) =>
       user.friends.includes(x._id)

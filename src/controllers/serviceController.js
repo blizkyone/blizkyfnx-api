@@ -56,6 +56,7 @@ const getServiceProfile = asyncHandler(async (req, res) => {
             select: 'name familyName',
          },
       })
+      .populate('recos', 'name familyName')
       .lean()
 
    if (req.user) {

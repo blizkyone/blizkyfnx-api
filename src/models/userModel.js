@@ -96,7 +96,16 @@ const userSchema = mongoose.Schema(
             ref: 'Service',
          },
       ],
-      facebookId: String,
+      facebook: {
+         id: String,
+         accessToken: String,
+         refreshToken: String,
+      },
+      google: {
+         id: String,
+         accessToken: String,
+         refreshToken: String,
+      },
       tokens: [
          {
             token: {

@@ -7,15 +7,19 @@ import express from 'express'
 import cors from 'cors'
 import colors from 'colors'
 import morgan from 'morgan'
+import passport from 'passport'
+import session from 'express-session'
 import { notFound, errorHandler } from './middleware/errorMiddleware.js'
 import connectDB from './config/db.js'
+import passportConfig from './config/passport.js'
 import userRoutes from './routes/userRoutes.js'
+import authRoutes from './routes/authRoutes.js'
 import serviceRoutes from './routes/serviceRoutes.js'
 import placesRoutes from './routes/placesRoutes.js'
 import notificationsRoutes from './routes/notificationsRoutes.js'
 
 connectDB()
-// crontasks()
+passportConfig()
 
 const app = express()
 app.use(cors())
@@ -25,6 +29,24 @@ if (process.env.NODE_ENV === 'development') {
    app.use(morgan('dev'))
 }
 
+//Sessions
+// app.use(
+//    session({
+//       secret: 'loki dog',
+//       resave: false,
+//       // saveUninitialized: true,
+//       // false: don't create a session until something is stored
+//       saveUninitialized: false,
+//       //store - mongo store mas adelante
+//       cookie: { secure: true },
+//    })
+// )
+
+//Passport middleware
+app.use(passport.initialize())
+// app.use(passport.session())
+
+app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/services', serviceRoutes)
 app.use('/api/places', placesRoutes)
